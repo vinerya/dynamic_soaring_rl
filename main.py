@@ -21,6 +21,7 @@ for e in range(n_episodes):
     
     for time in range(500):  # max 500 steps per episode
         action = agent.act(state)
+        action = action.astype(np.float32)
         next_state, reward, done, _ = env.step(action)
         next_state = np.reshape(next_state, [1, state_size])
         
