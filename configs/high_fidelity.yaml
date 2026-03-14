@@ -1,0 +1,21 @@
+wind:
+  profile_type: composite
+  reference_speed: 15.0
+  reference_height: 10.0
+  surface_roughness: 0.001
+  direction: 0.0
+  turbulence_intensity: 0.0
+  dryden_enabled: true
+  dryden_scale_length: 200.0
+  dryden_intensity: 1.0
+  thermal_enabled: false
+  time_varying: true
+  time_varying_period: 120.0
+  time_varying_amplitude: 0.15
+
+sim:
+  dt: 0.02
+  max_episode_steps: 5000
+
+training:
+  total_timesteps: 2_000_000

@@ -39,6 +39,39 @@ def detect_soaring_cycles(altitudes: np.ndarray, min_amplitude: float = 5.0) -> 
     return cycles
 
 
+def compute_heading_rate(velocities: np.ndarray, dt: float) -> np.ndarray:
+    """Compute heading rate of change (rad/s) from velocity time series."""
+    headings = np.arctan2(velocities[:, 1], velocities[:, 0])
+    dh = np.diff(headings)
+    # Unwrap angle differences to [-pi, pi]
+    dh = (dh + np.pi) % (2 * np.pi) - np.pi
+    return dh / dt
+
+
+def compute_turn_radius(velocities: np.ndarray, dt: float) -> np.ndarray:
+    """Compute instantaneous turn radius (m) from velocity time series.
+
+    R = V / |d_heading/dt|. Returns NaN where heading rate is near zero.
+    """
+    speeds = np.linalg.norm(velocities[:-1, :2], axis=1)
+    heading_rate = np.abs(compute_heading_rate(velocities, dt))
+    with np.errstate(divide="ignore", invalid="ignore"):
+        radius = np.where(heading_rate > 1e-4, speeds / heading_rate, np.nan)
+    return radius
+
+
+def compute_glide_ratio(velocities: np.ndarray) -> np.ndarray:
+    """Compute instantaneous glide ratio (horizontal_speed / |sink_rate|).
+
+    Returns NaN where sink rate is near zero.
+    """
+    h_speed = np.linalg.norm(velocities[:, :2], axis=1)
+    sink_rate = np.abs(velocities[:, 2])
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ratio = np.where(sink_rate > 0.1, h_speed / sink_rate, np.nan)
+    return ratio
+
+
 def compute_episode_stats(trajectory: np.ndarray, dt: float) -> dict:
     """Compute comprehensive statistics for an episode trajectory.
 
@@ -84,4 +117,7 @@ def compute_episode_stats(trajectory: np.ndarray, dt: float) -> dict:
         "distance_traveled": float(
             np.sum(np.linalg.norm(np.diff(positions, axis=0), axis=1))
         ),
+        "heading_rate_mean": float(np.mean(np.abs(compute_heading_rate(velocities, dt)))),
+        "turn_radius_mean": float(np.nanmean(compute_turn_radius(velocities, dt))),
+        "glide_ratio_mean": float(np.nanmean(compute_glide_ratio(velocities))),
     }
