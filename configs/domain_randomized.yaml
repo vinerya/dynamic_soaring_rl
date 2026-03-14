@@ -1,0 +1,10 @@
+randomization:
+  enabled: true
+  reference_speed_range: [8.0, 25.0]
+  surface_roughness_range: [0.0001, 0.01]
+  direction_range: [0.0, 6.283]
+  direction_shear_range: [0.0, 0.005]
+  turbulence_range: [0.0, 0.15]
+
+training:
+  total_timesteps: 2_000_000

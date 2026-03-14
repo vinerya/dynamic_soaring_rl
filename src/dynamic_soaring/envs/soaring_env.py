@@ -117,8 +117,11 @@ class DynamicSoaringEnv(gym.Env):
         self._alpha = float(alpha_cmd)
         self._bank = float(bank_cmd)
 
+        # Current simulation time
+        current_time = self._step_count * sim.dt
+
         # Compute energy before step
-        wind_before = self._wind_profile.get_wind(self._state[:3])
+        wind_before = self._wind_profile.get_wind(self._state[:3], current_time)
         energy_before = compute_total_energy(
             self._state, wind_before, self.config.bird.mass, sim.g
         )
@@ -126,7 +129,7 @@ class DynamicSoaringEnv(gym.Env):
         # Physics step (RK4)
         new_state, step_info = rk4_step(
             self._state, self._alpha, self._bank,
-            self._wind_profile, self.config.bird, sim
+            self._wind_profile, self.config.bird, sim, current_time
         )
 
         self._state = new_state
@@ -134,7 +137,8 @@ class DynamicSoaringEnv(gym.Env):
         self.trajectory.append(self._state.copy())
 
         # Compute energy after step
-        wind_after = self._wind_profile.get_wind(self._state[:3])
+        next_time = self._step_count * sim.dt
+        wind_after = self._wind_profile.get_wind(self._state[:3], next_time)
         energy_after = compute_total_energy(
             self._state, wind_after, self.config.bird.mass, sim.g
         )
@@ -176,7 +180,8 @@ class DynamicSoaringEnv(gym.Env):
         """Build 13D normalized observation vector."""
         pos = self._state[:3]
         vel = self._state[3:]
-        wind = self._wind_profile.get_wind(pos)
+        current_time = self._step_count * self.config.sim.dt
+        wind = self._wind_profile.get_wind(pos, current_time)
         v_air = vel - wind
         airspeed = np.linalg.norm(v_air)
         ground_speed = np.linalg.norm(vel[:2])
@@ -230,7 +235,8 @@ class DynamicSoaringEnv(gym.Env):
         termination_reason: str | None = None,
     ) -> dict[str, Any]:
         """Build info dict with raw state data for logging."""
-        wind = self._wind_profile.get_wind(self._state[:3])
+        current_time = self._step_count * self.config.sim.dt
+        wind = self._wind_profile.get_wind(self._state[:3], current_time)
         info: dict[str, Any] = {
             "position": self._state[:3].copy(),
             "velocity": self._state[3:].copy(),

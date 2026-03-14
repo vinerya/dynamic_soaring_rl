@@ -1,0 +1,15 @@
+wind:
+  reference_speed: 15.0
+  reference_height: 10.0
+
+multi_agent:
+  n_agents: 4
+  comm_variant: no_comm
+  n_neighbors: 2
+  wake_enabled: true
+  wake_decay_rate: 0.1
+  training_variant: parameter_sharing
+
+training:
+  total_timesteps: 2_000_000
+  n_envs: 4

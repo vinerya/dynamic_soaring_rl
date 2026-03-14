@@ -16,6 +16,7 @@ def derivatives(
     wind_profile: WindProfile,
     bird: BirdConfig,
     sim: SimConfig,
+    time: float = 0.0,
 ) -> tuple[np.ndarray, dict]:
     """Compute state derivatives [dx,dy,dz, dvx,dvy,dvz].
 
@@ -24,7 +25,7 @@ def derivatives(
     pos = state[:3]
     vel = state[3:]
 
-    wind = wind_profile.get_wind(pos)
+    wind = wind_profile.get_wind(pos, time)
     F_lift, F_drag, airspeed, cl, cd = compute_aero_forces(
         vel, wind, alpha, bank, bird, sim.rho
     )
@@ -56,6 +57,7 @@ def rk4_step(
     wind_profile: WindProfile,
     bird: BirdConfig,
     sim: SimConfig,
+    time: float = 0.0,
 ) -> tuple[np.ndarray, dict]:
     """Fourth-order Runge-Kutta integration step.
 
@@ -63,10 +65,10 @@ def rk4_step(
     """
     dt = sim.dt
 
-    k1, _ = derivatives(state, alpha, bank, wind_profile, bird, sim)
-    k2, _ = derivatives(state + 0.5 * dt * k1, alpha, bank, wind_profile, bird, sim)
-    k3, _ = derivatives(state + 0.5 * dt * k2, alpha, bank, wind_profile, bird, sim)
-    k4, info = derivatives(state + dt * k3, alpha, bank, wind_profile, bird, sim)
+    k1, _ = derivatives(state, alpha, bank, wind_profile, bird, sim, time)
+    k2, _ = derivatives(state + 0.5 * dt * k1, alpha, bank, wind_profile, bird, sim, time + 0.5 * dt)
+    k3, _ = derivatives(state + 0.5 * dt * k2, alpha, bank, wind_profile, bird, sim, time + 0.5 * dt)
+    k4, info = derivatives(state + dt * k3, alpha, bank, wind_profile, bird, sim, time + dt)
 
     new_state = state + (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
 

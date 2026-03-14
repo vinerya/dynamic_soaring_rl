@@ -1,0 +1,38 @@
+name: reward_ablation
+description: "Compare reward function variants on soaring performance"
+base_config: configs/default.yaml
+
+training:
+  total_timesteps: 500_000
+  n_envs: 4
+
+seeds: [42, 123, 456]
+
+conditions:
+  default:
+    description: "Energy delta + survival + smoothness"
+    overrides: {}
+
+  energy_only:
+    description: "Pure energy extraction reward"
+    overrides:
+      reward:
+        variant: energy_only
+
+  survival_heavy:
+    description: "Strong survival bonus, weak energy"
+    overrides:
+      reward:
+        variant: survival_heavy
+
+  altitude_band:
+    description: "Reward for staying in target altitude band"
+    overrides:
+      reward:
+        variant: altitude_band
+
+  cycle_bonus:
+    description: "Bonus for completing soaring cycles"
+    overrides:
+      reward:
+        variant: cycle_bonus

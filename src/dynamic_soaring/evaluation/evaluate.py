@@ -16,6 +16,7 @@ def evaluate_policy(
     n_episodes: int = 20,
     deterministic: bool = True,
     seed: int = 0,
+    return_trajectories: bool = False,
 ) -> dict:
     """Evaluate a trained model over multiple episodes.
 
@@ -27,6 +28,7 @@ def evaluate_policy(
 
     all_stats = []
     all_rewards = []
+    all_trajectories = []
 
     for ep in range(n_episodes):
         obs, info = env.reset(seed=seed + ep)
@@ -40,6 +42,8 @@ def evaluate_policy(
             done = terminated or truncated
 
         trajectory = np.array(env.trajectory)
+        if return_trajectories:
+            all_trajectories.append(trajectory)
         stats = compute_episode_stats(trajectory, config.sim.dt)
         stats["total_reward"] = total_reward
         stats["termination_reason"] = info.get("termination_reason", "truncated")
@@ -66,6 +70,9 @@ def evaluate_policy(
         },
         "episodes": all_stats,
     }
+
+    if return_trajectories:
+        agg["trajectories"] = all_trajectories
 
     return agg
 

@@ -1,0 +1,59 @@
+name: curriculum_ablation
+description: "Compare curriculum learning strategies vs direct training"
+base_config: configs/default.yaml
+
+training:
+  total_timesteps: 1_000_000
+  n_envs: 4
+
+seeds: [42, 123, 456]
+
+conditions:
+  no_curriculum:
+    description: "Direct training on full difficulty"
+    overrides: {}
+
+  staged_curriculum:
+    description: "3-stage curriculum: easy -> medium -> full"
+    overrides:
+      curriculum:
+        enabled: true
+        stages:
+          - name: easy
+            start_timestep: 0
+            overrides:
+              wind:
+                reference_speed: 8.0
+              sim:
+                init_altitude_range: [30, 40]
+          - name: medium
+            start_timestep: 300_000
+            overrides:
+              wind:
+                reference_speed: 12.0
+              sim:
+                init_altitude_range: [20, 50]
+          - name: full
+            start_timestep: 600_000
+            overrides:
+              wind:
+                reference_speed: 15.0
+              sim:
+                init_altitude_range: [20, 50]
+
+  gentle_start:
+    description: "2-stage: gentle start then full"
+    overrides:
+      curriculum:
+        enabled: true
+        stages:
+          - name: gentle
+            start_timestep: 0
+            overrides:
+              wind:
+                reference_speed: 10.0
+              sim:
+                init_altitude_range: [25, 45]
+          - name: full
+            start_timestep: 500_000
+            overrides: {}

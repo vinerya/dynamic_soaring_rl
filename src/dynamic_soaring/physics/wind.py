@@ -14,8 +14,8 @@ class WindProfile(ABC):
     """Base class for wind profiles."""
 
     @abstractmethod
-    def get_wind(self, position: np.ndarray) -> np.ndarray:
-        """Return 3D wind velocity vector at the given position."""
+    def get_wind(self, position: np.ndarray, time: float = 0.0) -> np.ndarray:
+        """Return 3D wind velocity vector at the given position and time."""
 
     @abstractmethod
     def get_gradient(self, position: np.ndarray) -> float:
@@ -49,7 +49,7 @@ class LogarithmicWindProfile(WindProfile):
         """Wind direction at altitude z (includes Ekman shear)."""
         return self._direction + self._direction_shear * z
 
-    def get_wind(self, position: np.ndarray) -> np.ndarray:
+    def get_wind(self, position: np.ndarray, time: float = 0.0) -> np.ndarray:
         z = max(position[2], 0.0)
         speed = self._speed_at(z)
         direction = self._direction_at(z)
@@ -89,7 +89,7 @@ class PowerLawWindProfile(WindProfile):
             return 0.0
         return self.u_ref * (z / self.z_ref) ** self.exponent
 
-    def get_wind(self, position: np.ndarray) -> np.ndarray:
+    def get_wind(self, position: np.ndarray, time: float = 0.0) -> np.ndarray:
         z = max(position[2], 0.0)
         speed = self._speed_at(z)
         return np.array([
@@ -109,5 +109,8 @@ def create_wind_profile(config: WindConfig, rng: np.random.Generator | None = No
         return LogarithmicWindProfile(config, rng)
     elif config.profile_type == "power_law":
         return PowerLawWindProfile(config, rng)
+    elif config.profile_type == "composite":
+        from dynamic_soaring.physics.wind_advanced import CompositeWindProfile
+        return CompositeWindProfile(config, rng)
     else:
         raise ValueError(f"Unknown wind profile type: {config.profile_type}")
