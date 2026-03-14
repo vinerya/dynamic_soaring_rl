@@ -1,0 +1,61 @@
+bird:
+  mass: 8.5
+  wing_area: 0.65
+  wing_span: 3.1
+  aspect_ratio: 15.0
+  cd0: 0.033
+  oswald_efficiency: 0.9
+  cl_max: 1.5
+  alpha_stall: 0.2618  # ~15 deg
+  cl_alpha: 5.7
+
+wind:
+  profile_type: logarithmic
+  reference_speed: 15.0
+  reference_height: 10.0
+  surface_roughness: 0.001
+  direction: 0.0
+  turbulence_intensity: 0.0
+
+sim:
+  dt: 0.02
+  g: 9.81
+  rho: 1.225
+  max_episode_steps: 3000
+  altitude_limit: 500.0
+  min_airspeed: 8.0
+  max_bank_angle: 1.0472  # 60 deg
+  min_alpha: -0.0873     # -5 deg
+  max_alpha: 0.2618      # 15 deg
+  max_load_factor: 3.0
+  init_altitude_range: [20.0, 50.0]
+  init_airspeed_range: [12.0, 18.0]
+
+reward:
+  energy_weight: 1.0
+  energy_scale: 981.0
+  survival_bonus: 0.01
+  smoothness_weight: 0.05
+  crash_penalty: -10.0
+  stall_penalty: -5.0
+
+training:
+  algorithm: PPO
+  total_timesteps: 2000000
+  learning_rate: 0.0003
+  batch_size: 64
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  n_epochs: 10
+  n_steps: 2048
+  n_envs: 8
+  net_arch: [256, 256]
+  seed: 42
+  log_dir: logs/
+  checkpoint_dir: checkpoints/
+  checkpoint_freq: 50000
+  eval_freq: 10000
+  eval_episodes: 10
+  normalize_obs: true
+  normalize_reward: true
